@@ -1,0 +1,7 @@
+PyQt5==5.15.11
+numpy==2.2.6
+matplotlib==3.10.7
+pandas==2.3.3
+scipy==1.16.2
+openpyxl==3.1.5
+pybaselines==1.2.1

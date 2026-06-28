@@ -1,0 +1,25 @@
+# PyInstaller build output (large binaries — rebuild locally)
+build/
+dist/
+*.manifest
+
+# Python caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.eggs/
+
+# virtual envs
+.venv/
+venv/
+env/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# scratch
+*.log
