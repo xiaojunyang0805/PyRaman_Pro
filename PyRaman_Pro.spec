@@ -98,6 +98,18 @@ a = Analysis(
         'scikit-learn',
         'pyqtgraph',
         'prettytable',
+        # present in the build environment but not used by the app; keep them
+        # out so the bundle stays small and PyQt5 is the only Qt binding
+        'PySide6',
+        'shiboken6',
+        'aiohttp',
+        'yarl',
+        'multidict',
+        'frozenlist',
+        'propcache',
+        'cryptography',
+        'pydantic',
+        'pydantic_core',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

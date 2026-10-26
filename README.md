@@ -14,7 +14,7 @@ Open files → Range → Despike → Smooth → Baseline → Normalize → Peaks
 ## Download (Windows)
 
 **[⬇ Download PyRaman_Pro-windows-x64.zip](https://github.com/xiaojunyang0805/PyRaman_Pro/raw/main/release/PyRaman_Pro-windows-x64.zip)**
-(ready-to-run, ~129 MB, no Python needed)
+(ready-to-run, ~141 MB, no Python needed)
 
 1. Download and extract the ZIP anywhere.
 2. Run **`PyRaman_Pro\PyRaman_Pro.exe`**.
