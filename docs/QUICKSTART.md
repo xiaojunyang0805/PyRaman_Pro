@@ -91,6 +91,8 @@ flat between 1700–2800. Full walkthrough: [Polystyrene_demo.md](Polystyrene_de
 | Key | Action |
 |---|---|
 | Ctrl+O | Open files |
+| Del (in the Spectra list) | Remove selected spectra |
+| Ctrl+W | Close all spectra |
 | Ctrl+Q | Exit |
 | Mouse wheel | Zoom (Shift = Y) |
 | Left-drag | Pan |
