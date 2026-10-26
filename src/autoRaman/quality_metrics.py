@@ -1,7 +1,7 @@
 """
 quality_metrics.py -- objective scoring functions for AutoRaman.
 
-These metrics answer the roadmap's question "what makes a 'good' baseline
+These metrics answer the question "what makes a 'good' baseline
 objectively?" and provide confidence scores for detected peaks. They are pure
 functions over numpy arrays so they can be tested in isolation.
 
@@ -36,7 +36,7 @@ class BaselineScore:
     weights: dict = field(default_factory=dict)
 
 
-# Default metric weights (roadmap table: Residual & Peak preservation = High).
+# Default metric weights (residual and peak preservation weigh most).
 DEFAULT_BASELINE_WEIGHTS = {
     "residual_rms": 0.30,
     "smoothness": 0.20,
@@ -185,14 +185,14 @@ def peak_confidence(
 
 
 # ---------------------------------------------------------------------------
-# Fit quality (Phase 2c -- placeholder)
+# Fit quality (placeholder)
 # ---------------------------------------------------------------------------
 
 def fit_quality(y: np.ndarray, y_fit: np.ndarray, n_params: int) -> float:
     """Goodness-of-fit score [0,1] for an automated peak fit.
 
     Currently returns adjusted-R^2 clamped to [0,1]. TODO: add reduced chi^2
-    and per-peak residual checks when auto-fitting (Phase 2c) lands.
+    and per-peak residual checks when automatic peak fitting is added.
     """
     y = np.asarray(y, dtype=float)
     y_fit = np.asarray(y_fit, dtype=float)

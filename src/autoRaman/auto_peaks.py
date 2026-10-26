@@ -1,21 +1,19 @@
 """
 auto_peaks.py -- automated peak detection for AutoRaman.
 
-Strategy (roadmap Phase 2b):
+Strategy:
     * Primary detector: scipy.signal.find_peaks with prominence/width gating
       derived from an estimated noise floor (robust, no manual threshold).
-    * Alternative detectors (CWT, 2nd-derivative) are scaffolded for the
-      challenging cases (shoulders, overlapping bands, low SNR) the roadmap
-      calls out.
+    * Alternative detectors (CWT, 2nd-derivative) are placeholders for the
+      challenging cases (shoulders, overlapping bands, low SNR).
     * Each peak carries a confidence score (quality_metrics.peak_confidence)
-      and the parameters used, so the user can carry the proposal into the
-      manual peak-fitting dialog and adjust.
+      and the parameters used, so the user can review and adjust it.
 
 Operates on a *baseline-corrected* spectrum (run AutoBaseline first, or pass an
 already-corrected y). Like the rest of the package it is GUI-free.
 
-Status: SCAFFOLD. find_peaks path is functional; CWT and 2nd-derivative paths
-are stubbed with clear TODOs.
+Status: the find_peaks path works; the CWT and 2nd-derivative paths and
+PeakValidator are not implemented yet.
 """
 
 from __future__ import annotations
@@ -105,32 +103,32 @@ class AutoPeaks:
         peaks.sort(key=lambda p: p.position)
         return peaks
 
-    # -- alternative detectors (scaffold) -----------------------------------
+    # -- alternative detectors (not implemented yet) ------------------------
     def detect_cwt(self, x, y_corr, widths=None) -> List[Peak]:  # pragma: no cover
         """Continuous Wavelet Transform detector (scipy.find_peaks_cwt).
 
-        TODO (Phase 2b): noise-robust multi-scale detection for low-SNR spectra
+        TODO: noise-robust multi-scale detection for low-SNR spectra
         (see test_data/low_snr_noisy.txt). Needs width-range selection and a
         confidence mapping from CWT ridge strength.
         """
-        raise NotImplementedError("CWT detector is a Phase 2b stub.")
+        raise NotImplementedError("CWT detector is not implemented yet.")
 
     def detect_second_derivative(self, x, y_corr) -> List[Peak]:  # pragma: no cover
         """Second-derivative detector for resolving shoulders/overlaps.
 
-        TODO (Phase 2b): smooth (Savitzky-Golay), take -y'', find zero-crossings
+        TODO: smooth (Savitzky-Golay), take -y'', find zero-crossings
         / negative minima to surface shoulder peaks find_peaks misses.
         """
-        raise NotImplementedError("Second-derivative detector is a Phase 2b stub.")
+        raise NotImplementedError("Second-derivative detector is not implemented yet.")
 
 
 class PeakValidator:
     """Filter false positives (cosmic spikes, noise) from a peak list.
 
-    TODO (Phase 2b): use width and neighbour-symmetry to reject single-bin
+    TODO: use width and neighbour-symmetry to reject single-bin
     cosmic spikes (test_data/cosmic_spike.txt) distinct from real bands, beyond
     the basic confidence gate already applied in AutoPeaks.detect.
     """
 
     def filter(self, peaks: List[Peak]) -> List[Peak]:  # pragma: no cover
-        raise NotImplementedError("PeakValidator is a Phase 2b stub.")
+        raise NotImplementedError("PeakValidator is not implemented yet.")

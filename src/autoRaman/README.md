@@ -1,12 +1,17 @@
-# AutoRaman module
+# autoRaman — analysis core of PyRaman Pro
 
-Automated baseline correction and peak detection for PyRamanGUI (**Track A**,
-roadmap Phase 2). Status: **v0.2.0** — baseline selection is driven by the
-**IS-Score** (a published, ground-truth-free baseline-quality metric) and the
-per-spectrum `ParameterOptimizer` is implemented; peak detection internals are
-still marked `TODO` for accuracy tuning.
+`autoRaman` is the GUI-free analysis package behind PyRaman Pro's **Auto Analyze**,
+the live **IS-Score** readout, **Optimize (IS-Score)** and peak detection. It
+depends only on numpy, scipy and pybaselines (no PyQt), so it can be used from
+scripts and tested headlessly.
 
-### IS-Score (baseline-quality metric)
+Automation **proposes; the user decides.** Every result carries the method name
+and parameters used, and `AutoAnalyzer.analyze()` returns a report of proposals
+without modifying the spectrum. In the app the proposal is copied into the
+normal controls, where it can be fine-tuned or replaced by the manual anchor
+baseline.
+
+## IS-Score (baseline-quality metric)
 
 `is_score.py` is a **clean-room re-implementation** of the Integrity Spectrum
 Score from:
@@ -27,41 +32,34 @@ res = is_score(raw, raw - baseline, axis, return_breakdown=True)  # ISScoreResul
 print(res.breakdown())
 ```
 
-`AutoBaseline` ranks candidate methods by IS-Score, and `ParameterOptimizer`
-tunes each method's key knob (lambda / poly order / half-window) to maximise it
-(`AutoBaseline.evaluate(x, y, optimize=True)`).
+On strongly structured backgrounds (e.g. polystyrene on glass) the IS-Score
+maximum can favour a baseline that leaves broad humps in; see
+[docs/Polystyrene_demo.md](../../docs/Polystyrene_demo.md).
 
-## Core principle: automation is additive
+## How the automatic analysis works
 
-Automation **proposes; the user disposes.** Every result carries the underlying
-`method` name and `params`, so a proposal can be replayed in PyRamanGUI's
-existing **manual** baseline/fit dialogs and hand-tuned. The manual workflow is
-never removed — automated processing can be limited in special cases (heavy
-fluorescence, overlapping shoulders, unusual line shapes), so the manual path
-must always remain available.
+1. **Baseline** — `AutoBaseline` runs a panel of methods: AsLS, arPLS, airPLS,
+   derpsALS, polynomial and rolling ball. For the penalised-least-squares
+   methods λ is chosen per spectrum from a grid (10¹ … 10⁷) by minimising a
+   fit cost; the candidates are then **ranked by IS-Score**.
+2. **Peaks** — `AutoPeaks` finds peaks on the corrected spectrum with
+   `scipy.signal.find_peaks`, gated by an estimated noise floor.
+3. **Report** — `AutoAnalyzer` returns an `AnalysisReport` with the best
+   baseline, the runners-up and the peaks.
 
-`AutoAnalyzer.analyze()` returns a **report of proposals**; it does **not**
-mutate the spectrum or auto-apply anything. The GUI layer decides.
+`ParameterOptimizer` (behind the app's **Optimize** button) tunes one method's
+main parameter to maximise the IS-Score directly.
 
 ## Layout
 
 | File | Role | Status |
 |---|---|---|
-| `is_score.py` | **IS-Score** baseline-quality metric (`is_score`, `ISScoreResult`) | Done — drives ranking + optimisation |
-| `quality_metrics.py` | Objective scoring: `baseline_quality`, `peak_confidence`, `fit_quality` (legacy heuristics; `_robust_noise_rms` reused by IS-Score) | Baseline done; peak/fit partial |
-| `auto_baseline.py` | `AutoBaseline` runs a method panel, ranks by **IS-Score**; `BaselineProposal`; `ParameterOptimizer` (IS-Score-maximising search) | Done |
-| `auto_peaks.py` | `AutoPeaks` (prominence-gated `find_peaks`); `Peak`; CWT / 2nd-deriv / `PeakValidator` (stubs) | Primary detector works; alternatives TODO |
-| `auto_analyzer.py` | `AutoAnalyzer` orchestrator; `AnalysisReport` | Baseline+peak orchestration works; auto-fit TODO |
-| `tests/test_smoke.py` | End-to-end smoke test over `test_data/` | Passing |
-
-## Design
-
-- **GUI-free.** Depends only on numpy / scipy / pybaselines (no PyQt), so it is
-  headless-testable. The Qt layer (a future "Auto Analyze" action in `Plot.py`)
-  imports and calls it.
-- **Decoupled from the app core.** The baseline method panel mirrors a subset of
-  `analysisMethods.BaselineCorrectionMethods` but calls pybaselines/rampy
-  directly, keeping the analysis core independent of the Qt application.
+| `is_score.py` | IS-Score (`is_score`, `ISScoreResult`) | Done |
+| `auto_baseline.py` | `AutoBaseline`, `BaselineProposal`, `ParameterOptimizer` | Done |
+| `auto_peaks.py` | `AutoPeaks`, `Peak`; CWT / 2nd-derivative detectors and `PeakValidator` | `find_peaks` detector works; the others are not implemented yet |
+| `auto_analyzer.py` | `AutoAnalyzer`, `AnalysisReport` | Baseline + peaks work; automatic fitting not implemented yet |
+| `quality_metrics.py` | fit cost, noise estimate, peak confidence, fit quality | Used by the modules above |
+| `tests/` | IS-Score unit tests and an end-to-end smoke test over `test_data/` | Passing |
 
 ## Usage
 
@@ -77,29 +75,19 @@ if report.ok:
     best = report.baseline          # BaselineProposal: .method, .params, .y_corr, .baseline, .score
     for p in report.peaks:          # list[Peak]: .position, .height, .fwhm, .confidence
         ...
-    # Hand best.method + best.params to the manual dialog to fine-tune.
 ```
 
-## Run the smoke test
+## Tests
 
 ```bash
-cd PyRamanGUI/src
-python -m autoRaman.tests.test_smoke
+cd src
+python -m pytest autoRaman/tests -q
 ```
 
-## Next steps (roadmap Phase 2)
+## Possible future work
 
-- **2a** — *done.* `ParameterOptimizer` does a coarse-to-fine search over the
-  key knob (`lam`, `poly_order`, `half_window`) maximising the IS-Score, which
-  also replaced the home-grown `baseline_quality` heuristic as the ranking
-  metric. (Optional future work: Bayesian search; calibrate `PENALTY_WEIGHTS`
-  against expert-labelled spectra.)
-- **2b** — calibrate `peak_confidence` and implement `PeakValidator` to reject
-  cosmic spikes (`test_data/cosmic_spike.txt`); add CWT + 2nd-derivative
-  detectors for low-SNR and shoulder peaks. *(Current scaffold over-detects —
-  the confidence gate is intentionally loose until this work lands.)*
-- **2c** — `AutoAnalyzer.auto_fit`: seed `peakFitting.FitFunctions` from detected
-  peaks, fit, score with `fit_quality`.
-- **GUI** — wire an "Auto Analyze" action in `Plot.py` that shows the report and
-  lets the user accept / switch baseline / drop into the manual dialog.
-```
+- Peak detection for difficult cases: CWT and 2nd-derivative detectors for
+  shoulders and low-SNR spectra, and `PeakValidator` to reject cosmic spikes.
+  The current detector errs on the side of finding too many peaks.
+- Automatic peak fitting from the detected peaks (`AutoAnalyzer.auto_fit`).
+- Calibrating the IS-Score penalty weights against expert-labelled spectra.

@@ -1,23 +1,22 @@
 """
 auto_baseline.py -- automated baseline method selection for AutoRaman.
 
-Strategy (roadmap Phase 2a):
-    1. Run a panel of baseline methods over the spectrum.
-    2. Score each result with quality_metrics.baseline_quality().
+Strategy:
+    1. Run a panel of baseline methods over the spectrum (lambda of the
+       penalised-least-squares methods picked per spectrum by fit cost).
+    2. Score each result with the IS-Score.
     3. Rank and return proposals; the caller decides what to apply.
 
 The output is a list of :class:`BaselineProposal`, each carrying the method
 name and the exact parameters used. That makes the proposal *portable into the
-manual workflow*: a user can open PyRamanGUI's baseline dialog, pick the same
-method, and start from the suggested parameters -- then hand-tune for the
-special cases where automation falls short.
+manual workflow*: a user can pick the same method in the app and start from
+the suggested parameters -- then hand-tune for the special cases where
+automation falls short.
 
-This module calls pybaselines / rampy directly (no PyQt) so it stays
-headless-testable. The method panel intentionally mirrors a subset of
-``analysisMethods.BaselineCorrectionMethods`` so behaviour matches the GUI.
+This module calls pybaselines directly (no PyQt) so it stays headless-testable.
 
-Status: SCAFFOLD with a working evaluate/rank loop. Parameter optimisation
-(grid / Bayesian search per method) is stubbed -- see ParameterOptimizer TODO.
+ParameterOptimizer (the app's Optimize button) tunes one method's main
+parameter to maximise the IS-Score directly.
 """
 
 from __future__ import annotations

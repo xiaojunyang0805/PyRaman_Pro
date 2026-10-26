@@ -1,5 +1,5 @@
 """
-auto_analyzer.py -- one-call orchestrator for AutoRaman (roadmap Phase 2c).
+auto_analyzer.py -- one-call orchestrator for autoRaman.
 
 Ties the pieces together for the "Auto Analyze" action:
 
@@ -10,12 +10,12 @@ Ties the pieces together for the "Auto Analyze" action:
                                    user accept/override)
 
 Crucially this returns a *report of proposals*, not a mutated spectrum. The
-PyRamanGUI layer presents the report and the user accepts, tweaks, or ignores
-it -- the manual baseline/fit dialogs remain the source of truth. Automation is
+app copies the proposal into its controls and the user accepts, tweaks, or
+ignores it -- the manual controls remain the source of truth. Automation is
 a fast first draft, not a replacement.
 
-Status: SCAFFOLD. Baseline + peak orchestration works; auto-fitting (Phase 2c)
-is left as a documented extension point.
+Status: baseline + peak orchestration works; automatic peak fitting is not
+implemented yet.
 """
 
 from __future__ import annotations
@@ -125,10 +125,10 @@ class AutoAnalyzer:
 
     # Extension point -------------------------------------------------------
     def auto_fit(self, x, y_corr, peaks):  # pragma: no cover
-        """Auto peak fitting (Phase 2c).
+        """Automatic peak fitting (not implemented yet).
 
         TODO: seed FitFunctions (Lorentz/Gauss/Voigt) from detected peak
         position/height/FWHM, fit, and score with quality_metrics.fit_quality.
         Will reuse peakFitting.FitFunctions from the existing app.
         """
-        raise NotImplementedError("Auto-fitting is a Phase 2c extension point.")
+        raise NotImplementedError("Automatic peak fitting is not implemented yet.")

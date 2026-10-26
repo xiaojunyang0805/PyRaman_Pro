@@ -56,7 +56,7 @@ Each step is a numbered on/off card with a live preview:
 
 **IS-Score** (Baseline step) is an objective 0–1 quality score for the current
 baseline (green ≥0.8 / amber ≥0.6 / red below). **Optimize (IS-Score)** searches
-λ to maximise it. See `doc/Polystyrene_demo.md` for what IS-Score is and its one
+λ to maximise it. See [Polystyrene_demo.md](Polystyrene_demo.md) for what IS-Score is and its one
 caveat.
 
 ### 4. Manual anchor baseline (OriginLab-style)
@@ -85,7 +85,7 @@ In **Baseline** click **✎ Edit anchors**:
 Recommended: **Smooth (9, 3) + airPLS, Strength λ≈100** (slide Strength low until
 the peaks emerge from the humps). Recovers the polystyrene fingerprint —
 **~1001 (strongest), 1031, 620, 795, 1331, 1450, 1602, 2852, 2904, 3054 cm⁻¹** —
-flat between 1700–2800. Full walkthrough: `doc/Polystyrene_demo.md`.
+flat between 1700–2800. Full walkthrough: [Polystyrene_demo.md](Polystyrene_demo.md).
 
 ## Shortcuts
 | Key | Action |
