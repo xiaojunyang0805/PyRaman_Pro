@@ -389,6 +389,59 @@ class SpectrumProcessor(QtWidgets.QMainWindow):
             self.lst_spectra.setCurrentRow(first_new)  # triggers selection
         self._update_empty_state()
 
+    def remove_selected(self):
+        """Remove the selected spectra from the library (processing settings are kept)."""
+        rows = sorted({i.row() for i in self.lst_spectra.selectedIndexes()}, reverse=True)
+        if not rows and self.lst_spectra.currentRow() >= 0:
+            rows = [self.lst_spectra.currentRow()]
+        if not rows:
+            return
+        self.lst_spectra.blockSignals(True)
+        for r in rows:
+            del self.library[r]
+            self.lst_spectra.takeItem(r)
+        self.lst_spectra.blockSignals(False)
+        self._clear_active()
+        if self.library:
+            self.lst_spectra.setCurrentRow(min(rows[-1], len(self.library) - 1))
+            self._on_library_current_changed(self.lst_spectra.currentRow())
+        self._update_empty_state()
+        self.status.showMessage("Removed {} spectrum(s).".format(len(rows)), 4000)
+
+    def clear_all(self):
+        """Close all spectra and clear the canvas (processing settings are kept)."""
+        if not self.library:
+            return
+        self.lst_spectra.blockSignals(True)
+        self.lst_spectra.clear()
+        self.lst_spectra.blockSignals(False)
+        self.library = []
+        self._clear_active()
+        self._update_empty_state()
+        self.status.showMessage("All spectra closed.", 4000)
+
+    def _clear_active(self):
+        """Forget everything derived from the active spectrum."""
+        self.x_full = np.linspace(0, 1, 2)
+        self.y_full = np.zeros_like(self.x_full)
+        self.xp, self.yp = self.x_full, self.y_full
+        self.peaks = []
+        self.fitted = []
+        self.overlays = []
+        self.baseline_curve = None
+        self.pre_baseline_y = None
+        if self.btn_anchors.isChecked():
+            self.btn_anchors.blockSignals(True)
+            self.btn_anchors.setChecked(False)
+            self.btn_anchors.blockSignals(False)
+        self.anchor_mode = False
+        self.anchors_x = self.anchors_y = None
+        self.tbl_peaks.setRowCount(0)
+        if _AUTORAMAN:
+            self.lbl_isscore.setText("—")
+            self.lbl_isscore.setStyleSheet("")
+        self.setWindowTitle("PyRaman Pro — Spectrum Processor")
+
     # -- UI -----------------------------------------------------------------
     def _build_ui(self):
         self._build_menubar()
@@ -468,6 +521,9 @@ class SpectrumProcessor(QtWidgets.QMainWindow):
         m_file = mbar.addMenu("File")
         act_open = m_file.addAction("Open files…", self.open_files)
         act_open.setShortcut("Ctrl+O")
+        m_file.addAction("Remove selected spectra", self.remove_selected)
+        act_clear = m_file.addAction("Close all spectra", self.clear_all)
+        act_clear.setShortcut("Ctrl+W")
         m_file.addSeparator()
         m_file.addAction("Export Data…", self.export_data)
         m_file.addAction("Export Figure…", self.export_figure)
@@ -494,9 +550,25 @@ class SpectrumProcessor(QtWidgets.QMainWindow):
         self.lst_spectra.currentRowChanged.connect(self._on_library_current_changed)
         self.lst_spectra.itemSelectionChanged.connect(self._on_library_selection_changed)
         v.addWidget(self.lst_spectra, 1)
+        # Del removes spectra only while the list has focus, never while typing a value
+        del_key = QtWidgets.QShortcut(QtGui.QKeySequence.Delete, self.lst_spectra)
+        del_key.setContext(QtCore.Qt.WidgetShortcut)
+        del_key.activated.connect(self.remove_selected)
         btn_open = QtWidgets.QPushButton("➕  Open files…")
         btn_open.clicked.connect(self.open_files)
         v.addWidget(btn_open)
+        row = QtWidgets.QHBoxLayout()
+        row.setSpacing(6)
+        btn_remove = QtWidgets.QPushButton("Remove")
+        btn_remove.setToolTip("Remove the selected spectra from the list (Del)")
+        btn_remove.clicked.connect(self.remove_selected)
+        btn_clear = QtWidgets.QPushButton("Clear all")
+        btn_clear.setToolTip("Close all spectra and clear the plot (Ctrl+W)")
+        btn_clear.clicked.connect(self.clear_all)
+        for b in (btn_remove, btn_clear):
+            b.setStyleSheet("padding: 5px 4px;")  # the panel is narrow; default padding clips the text
+            row.addWidget(b)
+        v.addLayout(row)
         box.setMinimumWidth(160)
         return box
 

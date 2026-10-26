@@ -30,6 +30,10 @@ decimal comma, BOM/encoding and a header row are auto-detected.
 Loaded spectra appear in the **Spectra** list (left). Click one to make it
 active; Ctrl/Shift-click several to **overlay** them for comparison.
 
+**Remove** (or Del in the list) drops the selected spectra; **Clear all**
+(File ▸ Close all spectra, Ctrl+W) empties the list and the plot so you can
+start on a new file. Processing settings are kept.
+
 ### 2. Auto Analyze (optional first pass)
 **Auto Analyze** picks a baseline and detects peaks automatically. Good for
 smooth fluorescence; for strongly structured backgrounds (see polystyrene below)
