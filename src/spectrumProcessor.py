@@ -801,6 +801,7 @@ class SpectrumProcessor(QtWidgets.QMainWindow):
             self.sl_strength.blockSignals(True)
             self.sl_strength.setValue(slider_val)
             self.sl_strength.blockSignals(False)
+            self._update_strength_label()  # signals were blocked, so refresh by hand
         if not self.step_baseline.isChecked():
             self.step_baseline.setChecked(True)
         self._recompute()
@@ -1238,6 +1239,7 @@ class SpectrumProcessor(QtWidgets.QMainWindow):
             self.sl_strength.blockSignals(True)
             self.sl_strength.setValue(int(round(10.0 * np.log10(lam))))
             self.sl_strength.blockSignals(False)
+            self._update_strength_label()  # signals were blocked, so refresh by hand
         self.step_baseline.setChecked(True)
         self.step_peaks.setChecked(True)
         self._recompute()
